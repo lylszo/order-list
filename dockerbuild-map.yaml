@@ -1,0 +1,3 @@
+apps:
+- name: order-system
+  build_context: ./

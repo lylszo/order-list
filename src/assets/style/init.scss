@@ -1,0 +1,36 @@
+/* 标签样式初始化 */
+
+body, ol, ul, h1, h2, h3, h4, h5, h6, p, th, td, dl, dd, form, fieldset, legend, input, textarea, select, label {
+  margin: 0;
+  padding: 0;
+}
+
+em {
+  font-style: normal
+}
+
+li {
+  list-style: none
+}
+
+h1, h2, h3, h4, h5, h6, small {
+  font-size: 100%;
+}
+
+img {
+  border: 0;
+  vertical-align: middle;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+p {
+  word-wrap: break-word;
+}
+
+div, button, button:focus, input, select, a, a:focus {
+  outline: none;
+}

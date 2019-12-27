@@ -1,0 +1,66 @@
+<div class="login">
+  <div class="box">
+    <div class="header clearfix">
+      <div class="logo"></div>
+      <div class="title">登录</div>
+    </div>
+    <div class="content">
+      <form
+        nz-form
+        [formGroup]="loginForm"
+        (ngSubmit)="login(loginForm.value)"
+      >
+        <nz-form-item>
+          <nz-form-control [nzErrorTip]="userErrorTpl">
+            <nz-input-group nzPrefixIcon="user">
+              <input type="text" nz-input formControlName="username" placeholder="账号">
+            </nz-input-group>
+            <ng-template #userErrorTpl let-control>
+              <ng-container *ngIf="control.hasError('required')">请输入账号！</ng-container>
+            </ng-template>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-control [nzErrorTip]="passwordErrorTpl">
+            <nz-input-group nzPrefixIcon="lock">
+              <input type="password" nz-input formControlName="password" autocomplete="new-password" placeholder="密码">
+            </nz-input-group>
+            <ng-template #passwordErrorTpl let-control>
+              <span *ngIf="control.hasError('required')">请输入密码！</span>
+                <span *ngIf="control.hasError('passwordLength')">密码长度应为6-12位</span>
+                <span *ngIf="control.hasError('passwordPattern')">密码至少包含大写字母、小写字母、数字、特殊字符中的三种</span>
+            </ng-template>
+          </nz-form-control>
+        </nz-form-item>
+        <button nz-button nzType="primary" [nzLoading]="loginLoading">登录</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 谷歌验证模态框 -->
+<nz-modal
+  [(nzVisible)]="googleModal"
+  (nzOnCancel)="googleCancel()"
+  (nzOnOk)="googleOk()"
+  nzTitle="谷歌验证"
+  [nzOkLoading]="googleLoading"
+  nzWidth="480px"
+  [nzMaskClosable]="false">
+  <div *ngIf="!openGoogle" class="mb20 tac">
+    <p class="mb20">请使用<span class="color">谷歌验证app</span>扫码注册, 然后填写相应验证码：</p>
+    <qr-code [value]="qr" [size]="150" [canvas]="true"></qr-code>
+  </div>
+  <form nz-form [formGroup]="googleForm" *ngIf="googleModal">
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>验证码</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="userErrorTpl">
+        <input type="text" nz-input formControlName="google_code" placeholder="请输入验证码">
+        <ng-template #userErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('required')">请输入验证码！</ng-container>
+          <ng-container *ngIf="control.hasError('pattern')">请输入6位数字！</ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</nz-modal>

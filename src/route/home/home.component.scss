@@ -1,0 +1,36 @@
+.home{
+  .myList{
+    min-height: 300px;
+  }
+  .expandTable {
+    td {
+      vertical-align: text-top;
+      line-height: 24px;
+      &.title {
+        color: #999;
+        width: 100px;
+        text-align: right;
+        vertical-align: top;
+      }
+      .modalImg {
+        margin-top: 6px;
+        margin-right: 10px;
+        cursor: pointer;
+        border-radius: 3px;
+        width: 104px;
+        height: 104px;
+        overflow: hidden;
+        vertical-align: top;
+        padding: 4px;
+        border: 1px solid #e8e8e8;
+        float: left;
+        img {
+          height: 100%;
+          width: 100%;
+          display: block;
+          object-fit: contain;
+        }
+      }
+    }
+  }
+}

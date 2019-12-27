@@ -1,0 +1,89 @@
+.layout {
+  font-size: 14px;
+  a{
+    color: #fff;
+    &:hover {
+      color: #127997;
+    }
+  }
+  .header{
+    position: fixed;
+    z-index: 999;
+    width: 100%;
+    height: 56px;
+    line-height: 56px;
+    background-color: #23b7e5;
+    top: 0;
+    .center{
+      margin: 0 auto;
+      height: 100%;
+      width: 100%;
+      max-width: 1560px;
+      min-width: 755px;
+      padding: 0 15px;
+      .links{
+        margin-left: 20px;
+        float: left;
+        li{
+          float: left;
+          a{
+            display: block;
+            font-size: 16px;
+            font-family: '微软雅黑';
+            padding: 0 15px;
+            &.acitve {
+              color: #127997;
+            }
+          }
+        }
+      }
+      .logo{
+        float: left;
+        img {
+          width: 180px;
+        }
+      }
+      .person{
+        .avatar{
+          display: block;
+          &.active  {
+            color: #127997;
+          }
+          .avatar-icon{
+            margin-top: -4px;
+            background-color: #7bd4ef;
+            color: inherit;
+          }
+          .name{
+            margin-left: 5px;
+            margin-right: 1px;
+            display: inline-block;
+            min-width: 20px;
+            text-align: center;
+          }
+        }
+      }
+    }
+  }
+  .body{
+    padding-top: 71px;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 1560px;
+    min-width: 755px;
+    .container{
+      background-color: rgba(255, 255, 255, .6);
+      border-radius: 4px;
+      box-shadow: 0 0 5px #ccc;
+      padding: 15px;
+      padding-bottom: 50px;
+      min-height: calc(100vh - 100px);
+    }
+  }
+  .footer{
+    padding: 12px;
+    height: 20px;
+  }
+}

@@ -1,0 +1,102 @@
+<div class="home" nz-row>
+  <div class="head-title">
+    管理员列表
+  </div>
+  <div class="tar mb5">
+    <button nz-button (click)="openAddModal()">添加账号</button>
+  </div>
+  <div class="myList">
+    <ng-template #totalTemplate let-total>共 {{ total }} 条</ng-template>
+    <nz-table
+      #middleTable
+      nzSize="middle"
+      [nzData]="myList"
+      [nzBordered]="true"
+      [nzShowPagination]="false"
+      [nzScroll]="{ x: '1000px' }"
+      [nzLoading]="tableLoading">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>账号</th>
+          <th>类型</th>
+          <th>创建人</th>
+          <th>创建时间</th>
+          <th nzWidth="80px" nzRight="0px" *ngIf="+user.role === 1">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-template ngFor let-data [ngForOf]="middleTable.data">
+          <tr>
+            <td>{{data.user_id}}</td>
+            <td>{{data.username}}</td>
+            <td>{{data.role | accountType}}</td>
+            <td>{{data.created_by || '-'}}</td>
+            <td>{{(data.created_at | date:'yyyy-MM-dd hh:mm:ss') || '-'}}</td>
+            <td nzWidth="80px" nzRight="0px" *ngIf="+user.role === 1">
+              <button nz-button nzSize="small" (click)="delAccount(data)" nzType="danger">删除</button>
+            </td>
+          </tr>
+        </ng-template>
+      </tbody>
+    </nz-table>      
+  </div>
+</div>
+
+<!-- 添加账号模态框 -->
+<nz-modal
+  [(nzVisible)]="addModal"
+  (nzOnCancel)="addModal=false"
+  (nzOnOk)="addOk()"
+  nzTitle="添加账号"
+  nzWidth="600px"
+  [nzOkLoading]="addOkLoading"
+  [nzMaskClosable]="false">
+  <form nz-form [formGroup]="addForm" *ngIf="addModal">
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>账户类型</nz-form-label>
+      <nz-form-control [nzSpan]="17">
+        <nz-select formControlName="role">
+          <nz-option nzValue="0" nzLabel="客服"></nz-option>
+          <nz-option nzValue="1" nzLabel="管理员"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>账号</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="userErrorTpl">
+        <nz-input-group>
+          <input type="text" nz-input formControlName="username" placeholder="请输入账号">
+        </nz-input-group>
+        <ng-template #userErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('required')">请输入账号！</ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>密码</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="passwordErrorTpl">
+        <nz-input-group>
+          <input type="password" nz-input formControlName="password" autocomplete="new-password" placeholder="请输入密码">
+        </nz-input-group>
+        <ng-template #passwordErrorTpl let-control>
+          <span *ngIf="control.hasError('required')">请输入密码！</span>
+            <span *ngIf="control.hasError('passwordLength')">密码长度应为6-12位</span>
+            <span *ngIf="control.hasError('passwordPattern')">密码至少包含大写字母、小写字母、数字、特殊字符中的三种</span>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>确认密码</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="password2ErrorTpl">
+        <nz-input-group>
+          <input type="password" nz-input formControlName="password2" autocomplete="new-password" placeholder="请确认密码">
+        </nz-input-group>
+        <ng-template #password2ErrorTpl let-control>
+          <span *ngIf="control.hasError('required')">请再次输入密码！</span>
+            <span *ngIf="control.hasError('password2')">两次输入密码不一致！</span>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</nz-modal>

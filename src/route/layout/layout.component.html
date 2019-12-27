@@ -1,0 +1,96 @@
+<div class="layout">
+  <div class="header">
+    <div class="center clearfix">
+      <div class="f-l">
+        <a class="logo" routerLink="/admin"><img src="../../assets/img/logo.png"></a>
+        <ul class="links clearfix" *ngIf="+user.role">
+          <li><a routerLink="/" (click)="toggleActive('')" [ngClass]="{acitve: !activeLink}">工单列表</a></li>
+          <li><a routerLink="/admin" (click)="toggleActive('admin')" [ngClass]="{acitve: activeLink === 'admin'}">管理员列表</a></li>
+        </ul>       
+      </div>
+      <div class="fr person">
+        <a class="avatar"
+          [ngClass]="{active: menuActive}"
+          nz-dropdown
+          [nzDropdownMenu]="menu"
+          nzOverlayClassName="downMenu"
+          (nzVisibleChange)="downMenuVisibleChange($event)"
+          nzPlacement="bottomRight">
+          <nz-avatar *ngIf="+user.role" class="avatar-icon" nzIcon="user"></nz-avatar>
+          <nz-avatar *ngIf="!+user.role" class="avatar-icon" nzIcon="customer-service"></nz-avatar>
+          <span class="name">{{user.name}}</span>
+          <i nz-icon nzType="down" nzTheme="outline"></i>
+        </a>
+        <nz-dropdown-menu #menu="nzDropdownMenu">
+          <ul nz-menu class="tac">
+            <li nz-menu-item>
+              <a (click)="openResetModal()">修改密码</a>
+            </li>
+            <li nz-menu-item>
+              <a (click)="logout()">退出登录</a>
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="container" *ngIf="token">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+  <div class="footer"></div>
+</div>
+
+
+<!-- 修改密码模态框 -->
+<nz-modal
+  [(nzVisible)]="resetModal"
+  (nzOnCancel)="resetModal=false"
+  (nzOnOk)="resetOk()"
+  nzTitle="修改密码"
+  nzWidth="600px"
+  [nzOkLoading]="editOkLoading"
+  [nzMaskClosable]="false">
+  <form nz-form [formGroup]="resetForm" *ngIf="resetModal">
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>旧密码</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="passwordErrorTpl">
+        <nz-input-group>
+          <input type="password" nz-input formControlName="old_password" autocomplete="new-password" placeholder="请输入旧密码">
+        </nz-input-group>
+        <ng-template #passwordErrorTpl let-control>
+          <span *ngIf="control.hasError('required')">请输入旧密码！</span>
+            <span *ngIf="control.hasError('passwordLength')">密码长度应为6-12位</span>
+            <span *ngIf="control.hasError('passwordPattern')">密码至少包含大写字母、小写字母、数字、特殊字符中的三种</span>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>新密码</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="passwordErrorTpl">
+        <nz-input-group>
+          <input type="password" nz-input formControlName="new_password" autocomplete="new-password" placeholder="请输入新密码">
+        </nz-input-group>
+        <ng-template #passwordErrorTpl let-control>
+          <span *ngIf="control.hasError('required')">请输入新密码！</span>
+            <span *ngIf="control.hasError('passwordLength')">密码长度应为6-12位</span>
+            <span *ngIf="control.hasError('passwordPattern')">密码至少包含大写字母、小写字母、数字、特殊字符中的三种</span>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>确认新密码</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="password2ErrorTpl">
+        <nz-input-group>
+          <input type="password" nz-input formControlName="password2" autocomplete="new-password" placeholder="请确认新密码">
+        </nz-input-group>
+        <ng-template #password2ErrorTpl let-control>
+          <span *ngIf="control.hasError('required')">请再次输入新密码！</span>
+            <span *ngIf="control.hasError('password2')">两次输入的新密码不一致！</span>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</nz-modal>
+

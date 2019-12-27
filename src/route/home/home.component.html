@@ -1,0 +1,336 @@
+<div class="home" nz-row>
+  <div class="head-title">
+    工单列表
+  </div>
+  <div>
+    <form nz-form [formGroup]="searchForm" nzLayout="inline" class="searchForm">
+      <nz-form-item>
+        <nz-form-label>交易哈希</nz-form-label>
+        <nz-form-control>
+          <input type="text" nz-input formControlName="tx_id" placeholder="请输入交易哈希" maxlength="100">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>地址标签</nz-form-label>
+        <nz-form-control>
+          <input type="text" nz-input formControlName="tag" placeholder="请输入地址标签" maxlength="100">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>状态</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="status">
+            <nz-option nzValue="" nzLabel="全部"></nz-option>
+            <nz-option nzValue="1" nzLabel="处理失败"></nz-option>
+            <nz-option nzValue="2" nzLabel="待处理"></nz-option>
+            <nz-option nzValue="0" nzLabel="处理成功"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>币种</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="coin">
+            <nz-option nzValue="" nzLabel="全部"></nz-option>
+            <nz-option nzValue="XRP" nzLabel="XRP"></nz-option>
+            <nz-option nzValue="EOS" nzLabel="EOS"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>创建时间</nz-form-label>
+        <nz-form-control>
+          <nz-range-picker formControlName="time" nzFormat="yyyy-MM-dd"></nz-range-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <button nz-button nzType="primary" (click)="search()">搜索</button>
+        <button class="ml10" nz-button nzType="primary" (click)="reset()">重置</button>
+      </nz-form-item>
+    </form>
+  </div>
+  <div class="tar mb5" *ngIf="+user.role === 0">
+    <button nz-button (click)="openModal()">新建工单</button>
+  </div>
+  <div class="myList">
+    <ng-template #totalTemplate let-total>共 {{ total }} 条</ng-template>
+    <nz-table
+      #middleTable
+      nzSize="middle"
+      [nzData]="myList"
+      [(nzPageIndex)]="currentPage"
+      [(nzPageSize)]="page_size"
+      [nzBordered]="true"
+      [nzScroll]="{ x: '1000px' }"
+      [nzTotal]="total_count"
+      [nzFrontPagination]="false"
+      [nzShowSizeChanger]="true"
+      [nzShowQuickJumper]="true"
+      [nzShowTotal]="totalTemplate"
+      [nzPageSizeOptions]="[10,20,30,50,80,100]"
+      (nzPageIndexChange)="getMyList()"
+      (nzPageSizeChange)="getMyList()"
+      [nzLoading]="tableLoading">
+      <thead>
+        <tr>
+          <th nzShowExpand></th>
+          <th>工单ID</th>
+          <th>币种名称</th>
+          <th>交易所用户名</th>
+          <th>创建人</th>
+          <th>创建时间</th>
+          <th>处理人</th>
+          <th>处理时间</th>
+          <th>状态</th>
+          <th nzWidth="80px" [nzRight]="+user.role === 0 ? '80px' : '0px'">操作</th>
+          <th *ngIf="+user.role === 0" nzWidth="80px" nzRight="0px">操作记录</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-template ngFor let-data [ngForOf]="middleTable.data">
+          <tr>
+            <td nzShowExpand [(nzExpand)]="mapOfExpandData[data.id]"></td>
+            <td>{{data.id}}</td>
+            <td>{{data.coin || '-'}}</td>
+            <td>{{data.user || '-'}}</td>
+            <td>{{data.creator || '-'}}</td>
+            <td>{{(data.created_at | date:'yyyy-MM-dd HH:mm:ss') || '-'}}</td>
+            <td>{{data.handler || '-'}}</td>
+            <td>{{(data.handled_at | date:'yyyy-MM-dd HH:mm:ss') || '-'}}</td>
+            <td>{{data.status | ticketStatus}}</td>
+            <td [ngStyle]="{width: '80px'}" [nzRight]="+user.role === 0 ? '80px' : '0px'">
+              <button *ngIf="+user.role === 0 && +data.status != 0" nz-button nzSize="small" (click)="openModal(data)">编辑</button>
+              <button *ngIf="+user.role === 1 && +data.status != 0" nz-button nzSize="small" (click)="handleIt(data)">处理</button>
+              <span *ngIf="+data.status == 0">-</span>
+            </td>
+            <td *ngIf="+user.role === 0" [ngStyle]="{width: '80px'}" nzRight="0px">
+              <button class="ml5" *ngIf="+user.role === 0 && +data.status != 2; else noneHistory" nz-button nzSize="small" (click)="history(data)">查看</button>
+              <ng-template #noneHistory>-</ng-template>
+            </td>
+          </tr>
+          <tr [nzExpand]="mapOfExpandData[data.id]">
+            <td></td>
+            <td colspan="100">
+              <table class="expandTable">
+                <tr>
+                  <td class="title">地址标签：</td>
+                  <td>{{ data.tag || '-' }}</td>
+                </tr>
+                <tr>
+                  <td class="title">交易哈希：</td>
+                  <td>{{ data.tx_id || '-' }}</td>
+                </tr>
+                <tr>
+                  <td class="title">错误信息：</td>
+                  <td>{{ data.error_message || '-' }}</td>
+                </tr>
+                <tr>
+                  <td class="title">备注：</td>
+                  <td>{{ data.remark || '-' }}</td>
+                </tr>
+                <tr>
+                  <td class="title">图片：</td>
+                  <td>
+                    <div *ngIf="data.image_path && data.image_path.length; else noneImg">
+                      <div class="modalImg" *ngFor="let url of data.image_path" (click)="handleListImg(url)">
+                        <img src="{{url}}" alt="加载失败">
+                      </div>                       
+                    </div>
+                    <ng-template #noneImg>
+                      <span>暂无</span>
+                    </ng-template>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </ng-template>
+      </tbody>
+    </nz-table>      
+  </div>
+</div>
+
+<!-- 查看图片弹框 -->
+<nz-modal
+  [nzVisible]="listImgVisible"
+  [nzContent]="imgModalContent"
+  [nzFooter]="null"
+  (nzOnCancel)="listImgVisible = false"
+  nzClassName="listImgModal"
+>
+  <ng-template #imgModalContent>
+    <img [src]="listImgUrl" alt="加载失败"/>
+  </ng-template>
+</nz-modal>
+
+<!-- 新建工单模态框 -->
+<nz-modal
+  [(nzVisible)]="addModal"
+  (nzOnCancel)="addModal=false"
+  (nzOnOk)="addOk()"
+  nzTitle="新建工单"
+  nzWidth="550px"
+  [nzOkLoading]="addOkLoading"
+  [nzMaskClosable]="false">
+  <form nz-form [formGroup]="addForm" *ngIf="addModal">
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>工单类型</nz-form-label>
+      <nz-form-control [nzSpan]="17">
+        <nz-select formControlName="ticket_type">
+          <nz-option nzValue="tag" nzLabel="标签缺失或错误"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>币种名称</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="coinErrorTpl">
+        <nz-select formControlName="coin" nzPlaceHolder="请选择币种">
+          <nz-option nzValue="EOS" nzLabel="EOS"></nz-option>
+          <nz-option nzValue="XRP" nzLabel="XRP"></nz-option>
+        </nz-select>
+        <ng-template #coinErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('required')">请选择币种！</ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>地址标签</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="tagErrorTpl">
+        <input type="text" nz-input formControlName="tag" placeholder="请输入地址标签">
+        <ng-template #tagErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('required')">请输入地址标签！</ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>交易哈希</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="txidErrorTpl">
+        <textarea formControlName="tx_id" nz-input rows="3" placeholder="请输入交易哈希" maxlength="400"></textarea>
+        <ng-template #txidErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('required')">请输入交易哈希！</ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5">交易所用户名</nz-form-label>
+      <nz-form-control [nzSpan]="17">
+        <input type="text" nz-input formControlName="user" placeholder="请输入交易所用户名">
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5">备注</nz-form-label>
+      <nz-form-control [nzSpan]="17">
+        <textarea [style.height.px]=80 nz-input formControlName="remark" placeholder="请输入备注" maxlength="200"></textarea>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>图片</nz-form-label>
+      <nz-form-control [nzSpan]="17">
+        <div class="clearfix">
+          <nz-upload
+            nzListType="picture-card"
+            [nzAccept]="'pdf, png, jpg, jpeg'"
+            [nzCustomRequest]="customReq"
+            [(nzFileList)]="fileList"
+            [nzShowButton]="fileList.length < 6"
+            [nzPreview]="handlePreview">
+              <i nz-icon nzType="plus" nzTheme="outline"></i>
+              <div class="ant-upload-text">Upload</div>
+          </nz-upload>
+          <nz-modal [nzVisible]="previewVisible" [nzContent]="modalContent" [nzFooter]="null" (nzOnCancel)="previewVisible=false">
+            <ng-template #modalContent>
+              <div class="pt30">
+                <img [src]="previewImage" [ngStyle]="{ 'width': '100%' }" />
+              </div>
+            </ng-template>
+          </nz-modal>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</nz-modal>
+
+<!-- 编辑工单模态框 -->
+<nz-modal
+  [(nzVisible)]="editModal"
+  (nzOnCancel)="editModal=false"
+  (nzOnOk)="editOk()"
+  [nzOkLoading]="editOkLoading"
+  nzTitle="{{editTitle}}"
+  nzWidth="550px"
+  [nzMaskClosable]="false">
+  <form nz-form [formGroup]="editForm" *ngIf="editModal">
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>币种名称</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="coinErrorTpl">
+        <nz-select nzPlaceHolder="Select a person" formControlName="coin" nzPlaceHolder="请选择币种">
+          <nz-option nzValue="EOS" nzLabel="EOS"></nz-option>
+          <nz-option nzValue="XRP" nzLabel="XRP"></nz-option>
+        </nz-select>
+        <ng-template #coinErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('required')">请选择币种！</ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>地址标签</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="tagErrorTpl">
+        <input type="text" nz-input formControlName="tag" placeholder="请输入地址标签">
+        <ng-template #tagErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('required')">请输入地址标签！</ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5" nzRequired>交易哈希</nz-form-label>
+      <nz-form-control [nzSpan]="17" [nzErrorTip]="txidErrorTpl">
+        <textarea formControlName="tx_id" nz-input rows="3" placeholder="请输入交易哈希" maxlength="400"></textarea>
+        <ng-template #txidErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('required')">请输入交易哈希！</ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="5">交易所用户名</nz-form-label>
+      <nz-form-control [nzSpan]="17">
+        <input type="text" nz-input formControlName="user" placeholder="请输入交易所用户名">
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</nz-modal>
+
+<!-- 工单处理记录 -->
+<nz-modal
+  [(nzVisible)]="openHistoryModal"
+  (nzOnCancel)="openHistoryModal=false"
+  [nzFooter]="null"
+  nzTitle="工单处理记录"
+  nzWidth="800px"
+  [nzMaskClosable]="false">
+    <nz-table
+      #smallTable
+      nzSize="small"
+      [nzData]="historyList"
+      [nzBordered]="true"
+      [nzFrontPagination]="false"
+      [nzLoading]="historyTableLoading">
+      <thead>
+        <tr>
+          <th>状态</th>
+          <th nzWidth="460px">错误信息</th>
+          <th>处理人</th>
+          <th nzWidth="100px">处理时间</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-template ngFor let-data [ngForOf]="smallTable.data">
+          <tr>
+            <td >{{data.status | ticketStatus}}</td>
+            <td nzBreakWord><div [ngStyle]="{'text-align': 'left'}">{{data.error_message || '-'}}</div></td>
+            <td >{{data.handled_by || '-'}}</td>
+            <td >{{data.created_at | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+          </tr>
+        </ng-template>
+      </tbody>
+    </nz-table>
+</nz-modal>

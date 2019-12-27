@@ -1,0 +1,7 @@
+{
+  "/api": {
+    "target": "http://order-system.t.youbank.top",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
